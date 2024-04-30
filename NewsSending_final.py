@@ -9,10 +9,10 @@ from datetime import datetime, timedelta
 
 # 환경 변수에서 이메일 계정 정보를 가져옵니다. 실제 환경에서는 이 값을 설정해야 합니다.
 sender_email = "hwijunjang@koreanair.com"
-app_password = "aaig gxux eokv kmjv"
+app_password = "emjb xdrv cweg kbfw"
 
 keywords = ["아시아나항공", "제주항공", "이스타항공", "에어인천", "에어프레미아", "티웨이항공"]
-factors = ["화물","사업"]
+factors = ["화물사업","화물 사업","화물 사업부","화물사업부"]
 
 
 def extract_article_content(url, keywords):
@@ -25,7 +25,7 @@ def extract_article_content(url, keywords):
         response.raise_for_status()
         soup = bs(response.content, 'html.parser')
         text = ' '.join(soup.stripped_strings)
-        if all(keyword in text for keyword in keywords) and "사업자" not in text:
+        if any(keyword in text for keyword in keywords):
             return text
     except Exception as e:
         print(f"기사 본문 추출 중 오류: {e}")
@@ -112,7 +112,7 @@ def main():
             html_content += f'<p class="article">{idx}. <a href="{link}">{title}</a></p>'
         html_content += "</body></html>"
         # send_email(html_content, ["hwijunjang@koreanair.com", "onlyhalfgp@gmail.com"])
-        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com",
+        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com","junghong@koreanair.com"
                                   "hwijunjang@koreanair.com"])
     else:
         # 기사가 없을 경우 알림 이메일을 보냅니다.
@@ -134,7 +134,7 @@ def main():
         </html>
         """
         # send_email(html_content, ["hwijunjang@koreanair.com"])
-        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com",
+        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com","junghong@koreanair.com"
                                   "hwijunjang@koreanair.com"])
 
 

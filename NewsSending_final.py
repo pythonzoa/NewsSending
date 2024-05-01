@@ -112,7 +112,7 @@ def main():
             html_content += f'<p class="article">{idx}. <a href="{link}">{title}</a></p>'
         html_content += "</body></html>"
         # send_email(html_content, ["hwijunjang@koreanair.com", "onlyhalfgp@gmail.com"])
-        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com","junghong@koreanair.com"
+        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com","junghong@koreanair.com",
                                   "hwijunjang@koreanair.com"])
     else:
         # 기사가 없을 경우 알림 이메일을 보냅니다.
@@ -134,7 +134,7 @@ def main():
         </html>
         """
         # send_email(html_content, ["hwijunjang@koreanair.com"])
-        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com","junghong@koreanair.com"
+        send_email(html_content, ["sanghunseo@koreanair.com", "jhoon_kim@koreanair.com", "skyukim@koreanair.com","junghong@koreanair.com",
                                   "hwijunjang@koreanair.com"])
 
 

@@ -31,29 +31,40 @@ def get_user_input():
     settings = load_settings()
     if settings is None:
         keywords = input("검색할 키워드를 쉼표로 구분하여 입력하세요: ").split(',')
-        factors = input("기사 내 반드시 포함될 키워드를 쉼표로 구분하여 입력하세요(or조건): ").split(',')
+        factors = input("기사 내 반드시 포함될 키워드를 쉼표로 구분하여 입력하세요: ").split(',')
+        factor_condition = input("키워드 조건을 선택하세요 (OR/AND): ").strip().upper()
+        while factor_condition not in ["OR", "AND"]:
+            print("잘못된 입력입니다. 'OR' 또는 'AND'를 입력하세요.")
+            factor_condition = input("키워드 조건을 선택하세요 (OR/AND): ").strip().upper()
         title = input("Project명을 입력하세요: ")
         email = input("기사를 받을 사람의 이메일을 쉼표로 구분하여 입력하세요: ").split(',')
         settings = {
             'keywords': keywords,
             'factors': factors,
-            'title' : title,
-            'email' : email
+            'factor_condition': factor_condition,
+            'title': title,
+            'email': email
         }
         save_settings(settings)
     return settings
 
-def extract_article_content(url, keywords):
+
+def extract_article_content(url, factors, factor_condition):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         soup = bs(response.content, 'html.parser')
         text = ' '.join(soup.stripped_strings)
-        return any(keyword in text for keyword in keywords)
+
+        if factor_condition == "OR":
+            return any(keyword.lower() in text.lower() for keyword in factors)
+        elif factor_condition == "AND":
+            return all(keyword.lower() in text.lower() for keyword in factors)
     except Exception as e:
         logging.error(f"기사 본문 추출 중 오류: {e}")
         return False
+
 
 def is_recent_article(date_text):
     now = datetime.now()
@@ -65,7 +76,7 @@ def is_recent_article(date_text):
         return article_time > now - timedelta(hours=24)
     return False
 
-def get_naver_news(keyword, factors):
+def get_naver_news(keyword, factors, factor_condition):
     try:
         url = f"https://search.naver.com/search.naver?where=news&query={keyword}"
         response = requests.get(url)
@@ -86,7 +97,7 @@ def get_naver_news(keyword, factors):
             if article_is_recent:
                 title = article.find('a', class_='news_tit').get('title')
                 link = article.find('a', class_='news_tit').get('href')
-                if extract_article_content(link, factors):
+                if extract_article_content(link, factors,factor_condition):
                     recent_articles.append((title, link))
         return recent_articles
     except Exception as e:
@@ -135,10 +146,11 @@ def main():
     settings = get_user_input()
     articles = []
     for keyword in settings['keywords']:
-        articles.extend(get_naver_news(keyword, settings['factors']))
+        articles.extend(get_naver_news(keyword, settings['factors'],settings['factor_condition']))
     unique_articles = list(set(articles))
     html_content = generate_email_content(unique_articles)
     send_email(html_content, settings['email'], settings['title'])
+
 
 if __name__ == "__main__":
     main()

@@ -7,47 +7,71 @@ from email.mime.text import MIMEText
 import re
 from datetime import datetime, timedelta
 import os
+import sys
 import logging
+import tkinter as tk
+from tkinter import simpledialog
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def save_settings(settings, filename='settings.json'):
-    with open(filename, 'w') as f:
-        json.dump(settings, f, indent=4)
-    logging.info("설정 파일이 저장되었습니다.")
+root = tk.Tk()
+root.withdraw()  # 메인 창을 숨깁니다.
 
-def load_settings(filename='settings.json'):
+def save_settings(settings):
+    # 실행 파일명을 기준으로 JSON 파일명 설정
+    exe_filename = os.path.basename(sys.argv[0])
+    # json_filename = exe_filename.replace('.exe', '.json')
+    json_filename = 'settings.json'
+
+    with open(json_filename, 'w') as f:
+        json.dump(settings, f, indent=4)
+    logging.info(f"{json_filename} 파일이 저장되었습니다.")
+
+
+def load_settings():
+    # 실행 파일명을 기준으로 JSON 파일명 설정
+    exe_filename = os.path.basename(sys.argv[0])
+    # json_filename = exe_filename.replace('.exe', '.json')
+    json_filename = 'settings.json'
+
     try:
-        with open(filename, 'r') as f:
+        with open(json_filename, 'r') as f:
             settings = json.load(f)
         logging.info("설정 파일이 성공적으로 로드되었습니다.")
         return settings
     except FileNotFoundError:
-        logging.warning(f"{filename} 파일을 찾을 수 없습니다. 새로운 설정을 입력해주세요.")
+        logging.warning(f"{json_filename} 파일을 찾을 수 없습니다. 새로운 설정을 입력해주세요.")
         return None
+
+def gui_input():
+    root = tk.Tk()
+    root.withdraw()  # 메인 창을 숨깁니다.
+
+    # 사용자 입력을 GUI로 받습니다.
+    keywords = simpledialog.askstring("입력", "검색할 키워드를 쉼표로 구분하여 입력하세요:")
+    factors = simpledialog.askstring("입력", "기사 내 반드시 포함될 키워드를 쉼표로 구분하여 입력하세요:")
+    factor_condition = simpledialog.askstring("입력", "키워드 조건을 선택하세요 (OR/AND):")
+    title = simpledialog.askstring("입력", "Project명을 입력하세요:")
+    email = simpledialog.askstring("입력", "기사를 받을 사람의 이메일을 쉼표로 구분하여 입력하세요:")
+
+    # 입력된 데이터를 딕셔너리로 반환합니다.
+    settings = {
+        'keywords': keywords.split(','),
+        'factors': factors.split(','),
+        'factor_condition': factor_condition.strip().upper(),
+        'title': title,
+        'email': email.split(',')
+    }
+    return settings
+
 
 def get_user_input():
     settings = load_settings()
     if settings is None:
-        keywords = input("검색할 키워드를 쉼표로 구분하여 입력하세요: ").split(',')
-        factors = input("기사 내 반드시 포함될 키워드를 쉼표로 구분하여 입력하세요: ").split(',')
-        factor_condition = input("키워드 조건을 선택하세요 (OR/AND): ").strip().upper()
-        while factor_condition not in ["OR", "AND"]:
-            print("잘못된 입력입니다. 'OR' 또는 'AND'를 입력하세요.")
-            factor_condition = input("키워드 조건을 선택하세요 (OR/AND): ").strip().upper()
-        title = input("Project명을 입력하세요: ")
-        email = input("기사를 받을 사람의 이메일을 쉼표로 구분하여 입력하세요: ").split(',')
-        settings = {
-            'keywords': keywords,
-            'factors': factors,
-            'factor_condition': factor_condition,
-            'title': title,
-            'email': email
-        }
+        settings = gui_input()
         save_settings(settings)
     return settings
-
 
 def extract_article_content(url, factors, factor_condition):
     try:
